@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  dayinbloom-data-collector
+Transform:
+- AWS::Serverless-2016-10-31
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Resources:
+  # Lambda Functions
+  IntradayDataCollector:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fitbit-intraday-data-collector
+      Description: "'마지막 기기 동기화 시간' 의 15분 전부터의 심박수, 걸음 수, 거리, 칼로리 데이터를 가져와서 저장하는 함수"
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
+      CodeUri: dist/intraday-data-collector
+      Handler: handler.handler
+      Layers:
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:axios:8
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
+  ShortTermAverageCalculator:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fitbit-short-term-average-calculator
+      Description: 어제의 데이터를 기반으로 단기 평균 데이터를 업데이트하는 함수
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
+      CodeUri: dist/short-term-average-calculator
+      Handler: handler.handler
+      Layers:
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
+  DailySummaryCollector:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fitbit-daily-summary-collector
+      Description: 일일 활동 요약 데이터 수집 및 저장하는 함수
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
+      CodeUri: dist/daily-summary-collector
+      Handler: handler.handler
+      Layers:
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:axios:8
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
+  DailyHealthMetricsCollector:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fitbit-daily-health-metrics-collector
+      Description: 일일 건강 지표 데이터 수집 및 저장하는 함수
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
+      CodeUri: dist/daily-health-metrics-collector
+      Handler: handler.handler
+      Layers:
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:axios:8
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
+  LongTermAverageCalculator:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fitbit-long-term-average-calculator
+      Description: 매월 2일에 지난 달의 데이터를 기반으로 장기 평균 데이터를 업데이트하는 함수
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
+      CodeUri: dist/long-term-average-calculator
+      Handler: handler.handler
+      Layers:
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
+  OldAverageDataRemover:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fitbit-old-average-data-remover
+      Description: 오래된 평균 데이터를 삭제하는 함수
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
+      CodeUri: dist/old-average-data-remover
+      Handler: handler.handler
+      Layers:
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
+  OldRawDataRemover:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fitbit-old-raw-data-remover
+      Description: 오래된 일반 데이터를 삭제하는 함수
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
+      CodeUri: dist/old-raw-data-remover
+      Handler: handler.handler
+      Layers:
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
+  SleepDataCollector:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fitbit-sleep-data-collector
+      Description: 하루에 5번 오늘 수면 데이터 수집 후 저장하는 함수
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
+      CodeUri: dist/sleep-data-collector
+      Handler: handler.handler
+      Layers:
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:axios:8
+        - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
+
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    LoggingConfig:
+      LogFormat: JSON
