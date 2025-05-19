@@ -28,7 +28,7 @@ export default function calculateDailyAverage(
       fairly_active_minutes,
       very_active_minutes,
       sedentary_minutes,
-    } = yesterdayActivityData;
+    } = yesterdayActivityData.toJSON();
     const {
       total_sleep_minutes,
       deep_sleep_hours,
@@ -37,14 +37,14 @@ export default function calculateDailyAverage(
       minutesAwake,
       efficiency,
       quality,
-    } = yesterdaySleepData;
+    } = yesterdaySleepData.toJSON();
     const {
       sleep_hrv,
       breathing_rate,
       daily_hrv,
       skin_temperature,
       stress_score,
-    } = yesterdayHealthMetrics;
+    } = yesterdayHealthMetrics.toJSON();
 
     const activityData = {
       avg_steps: total_steps || 0,
@@ -64,9 +64,9 @@ export default function calculateDailyAverage(
     };
     const sleepData = {
       avg_total_sleep_hours: (total_sleep_minutes || 0) / 60,
-      avg_deep_sleep_hours: (deep_sleep_hours || 0) / 60,
-      avg_light_sleep_hours: (light_sleep_hours || 0) / 60,
-      avg_rem_sleep_hours: (rem_sleep_hours || 0) / 60,
+      avg_deep_sleep_hours: deep_sleep_hours || 0,
+      avg_light_sleep_hours: light_sleep_hours || 0,
+      avg_rem_sleep_hours: rem_sleep_hours || 0,
       avg_awake_hours: (minutesAwake || 0) / 60,
     };
     const healthMetrics = {

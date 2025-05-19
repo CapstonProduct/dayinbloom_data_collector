@@ -17,10 +17,13 @@ interface CalculateShortTermAverageDetail {
 }
 
 export const handler: EventBridgeHandler<
-  "Calculate Short Term Average of User's Activity Data",
+  'Calculate Short Term Average',
   CalculateShortTermAverageDetail,
   any
 > = async event => {
+  console.log(`이벤트를 전송받았습니다: `);
+  console.log(event);
+
   const { fitbit_user_id, date } = event.detail;
   const sequelize = new Sequelize({
     dialect: 'mysql',
@@ -28,6 +31,7 @@ export const handler: EventBridgeHandler<
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    logging: false,
   });
 
   const User = _Users.initModel(sequelize);
@@ -37,10 +41,10 @@ export const handler: EventBridgeHandler<
   const FitbitHealthMetrics = _FitbitHealthMetrics.initModel(sequelize);
 
   try {
-    // 유저 정보 조회
+    console.log(`유저 정보를 조회합니다: `);
     const user = await User.findOne({
       where: { encodedId: fitbit_user_id },
-      attributes: ['id', 'encodedId', 'access_token', 'access_token_expires'],
+      attributes: ['id'],
     });
     if (!user) {
       return {
@@ -50,14 +54,20 @@ export const handler: EventBridgeHandler<
           fitbit_user_id,
         }),
       };
+    } else {
+      console.log(
+        `유저 ${fitbit_user_id} 의 정보를 찾았습니다: ${JSON.stringify(user.toJSON())}`,
+      );
     }
-    const userId = user.id;
+    const { id: userId } = user.toJSON();
 
     const today = DateTime.now().setZone('UTC+9').startOf('day');
     const todayStr = today.toFormat('yyyy-MM-dd');
     const yesterdayStr = today.minus({ days: 1 }).toFormat('yyyy-MM-dd');
 
     // 오늘 평균 계산을 위한 raw data(activities, sleep, metrics) 조회
+    console.log(`오늘 날짜: ${todayStr}`);
+    console.log(`어제 날짜: ${yesterdayStr} 의 데이터를 조회합니다.`);
     const [yesterdayActivityData, yesterdaySleepData, yesterdayHealthMetrics] =
       await Promise.all([
         FitbitActivitySummary.findOne({
@@ -82,6 +92,9 @@ export const handler: EventBridgeHandler<
       ]);
 
     // 오늘의 데이터 평균 계산
+    console.log(
+      `어제 날짜: ${yesterdayStr} 의 데이터를 조회했습니다. 평균을 계산합니다: `,
+    );
     const yesterdayAverage = calculateDailyAverage(
       yesterdayActivityData,
       yesterdaySleepData,
@@ -101,10 +114,17 @@ export const handler: EventBridgeHandler<
       order: [['recorded_at', 'DESC']],
       limit: 30,
     });
+    console.log(
+      `최근 30일치 평균 데이터를 조회했습니다. 데이터 총 ${monthlyAveragesQueryResult.length} 개`,
+    );
+
     // 7일치 평균은 7일 이전의 평균인것임
     const weeklyAveragesQueryResult = monthlyAveragesQueryResult.filter(
       ({ recorded_at }) =>
         new Date(recorded_at) >= new Date(today.minus({ days: 7 }).valueOf()),
+    );
+    console.log(
+      `최근 7일치 평균 데이터를 조회했습니다. 데이터 총 ${weeklyAveragesQueryResult.length} 개`,
     );
 
     const newWeeklyAverage = calculateRangedAverage(
@@ -156,23 +176,17 @@ export const handler: EventBridgeHandler<
     await sequelize.close();
 
     return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: '누적 평균 계산이 성공적으로 완료되었습니다.',
-        fitbit_user_id,
-        date: todayStr,
-        period_types: '1D, 7D, 30D',
-      }),
+      message: '누적 평균 계산이 성공적으로 완료되었습니다.',
+      fitbit_user_id,
+      date: todayStr,
+      period_types: '1D, 7D, 30D',
     };
   } catch (error) {
     await sequelize.close();
     console.error('Error:', error);
     return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: '데이터 평균 계산 중 오류가 발생했습니다.',
-        error: error instanceof Error ? error.message : String(error),
-      }),
+      message: '데이터 평균 계산 중 오류가 발생했습니다.',
+      error: error instanceof Error ? error.message : String(error),
     };
   }
 };

@@ -13,24 +13,12 @@ export interface FitbitActivityDataAttributes {
   created_at?: Date;
 }
 
-export type FitbitActivityDataPk = 'id';
+export type FitbitActivityDataPk = "id";
 export type FitbitActivityDataId = FitbitActivityData[FitbitActivityDataPk];
-export type FitbitActivityDataOptionalAttributes =
-  | 'id'
-  | 'calories_total'
-  | 'created_at';
-export type FitbitActivityDataCreationAttributes = Optional<
-  FitbitActivityDataAttributes,
-  FitbitActivityDataOptionalAttributes
->;
+export type FitbitActivityDataOptionalAttributes = "id" | "calories_total" | "created_at";
+export type FitbitActivityDataCreationAttributes = Optional<FitbitActivityDataAttributes, FitbitActivityDataOptionalAttributes>;
 
-export class FitbitActivityData
-  extends Model<
-    FitbitActivityDataAttributes,
-    FitbitActivityDataCreationAttributes
-  >
-  implements FitbitActivityDataAttributes
-{
+export class FitbitActivityData extends Model<FitbitActivityDataAttributes, FitbitActivityDataCreationAttributes> implements FitbitActivityDataAttributes {
   id!: number;
   user_id!: number;
   date!: Date;
@@ -47,61 +35,68 @@ export class FitbitActivityData
   createUser!: Sequelize.BelongsToCreateAssociationMixin<Users>;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof FitbitActivityData {
-    return FitbitActivityData.init(
+    return FitbitActivityData.init({
+    id: {
+      autoIncrement: true,
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      primaryKey: true
+    },
+    user_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
+    },
+    date: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    steps: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    distance_km: {
+      type: DataTypes.FLOAT,
+      allowNull: false
+    },
+    calories_total: {
+      type: DataTypes.FLOAT,
+      allowNull: true
+    },
+    heart_rate: {
+      type: DataTypes.FLOAT,
+      allowNull: false
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
+    }
+  }, {
+    sequelize,
+    tableName: 'fitbit_activity_data',
+    timestamps: false,
+    indexes: [
       {
-        id: {
-          autoIncrement: true,
-          type: DataTypes.BIGINT,
-          allowNull: false,
-          primaryKey: true,
-        },
-        user_id: {
-          type: DataTypes.BIGINT,
-          allowNull: false,
-          references: {
-            model: 'users',
-            key: 'id',
-          },
-        },
-        date: {
-          type: DataTypes.DATE,
-          allowNull: false,
-        },
-        steps: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-        },
-        distance_km: {
-          type: DataTypes.FLOAT,
-          allowNull: false,
-        },
-        calories_total: {
-          type: DataTypes.FLOAT,
-          allowNull: true,
-        },
-        heart_rate: {
-          type: DataTypes.FLOAT,
-          allowNull: false,
-        },
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
       },
       {
-        sequelize,
-        tableName: 'fitbit_activity_data',
-        timestamps: true,
-        indexes: [
-          {
-            name: 'PRIMARY',
-            unique: true,
-            using: 'BTREE',
-            fields: [{ name: 'id' }],
-          },
-          {
-            name: 'idx_user_time',
-            using: 'BTREE',
-            fields: [{ name: 'user_id' }, { name: 'date' }],
-          },
-        ],
-      }
-    );
+        name: "idx_user_time",
+        using: "BTREE",
+        fields: [
+          { name: "user_id" },
+          { name: "date" },
+        ]
+      },
+    ]
+  });
   }
 }

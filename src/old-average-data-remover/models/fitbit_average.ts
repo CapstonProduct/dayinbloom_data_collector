@@ -5,7 +5,7 @@ export interface FitbitAverageAttributes {
   id: number;
   user_id: number;
   recorded_at: string;
-  period_type: '1D' | '7D' | '30D' | '90D' | '180D' | '365D';
+  period_type: '1D' | '7D' | '30D';
   avg_steps?: number;
   avg_calories_total?: number;
   avg_distance_km?: number;
@@ -61,10 +61,10 @@ export type FitbitAverageOptionalAttributes =
   | 'avg_skin_temperature'
   | 'avg_stress_score'
   | 'avg_total_score'
-  | 'avg_activity_score'
-  | 'avg_metrics_score'
   | 'updated_at'
-  | 'created_at';
+  | 'created_at'
+  | 'avg_activity_score'
+  | 'avg_metrics_score';
 export type FitbitAverageCreationAttributes = Optional<
   FitbitAverageAttributes,
   FitbitAverageOptionalAttributes
@@ -77,7 +77,7 @@ export class FitbitAverage
   id!: number;
   user_id!: number;
   recorded_at!: string;
-  period_type!: '1D' | '7D' | '30D' | '90D' | '180D' | '365D';
+  period_type!: '1D' | '7D' | '30D';
   avg_steps?: number;
   avg_calories_total?: number;
   avg_distance_km?: number;
@@ -99,12 +99,12 @@ export class FitbitAverage
   avg_respiratory_rate?: number;
   avg_skin_temperature?: number;
   avg_stress_score?: number;
-  avg_activity_score?: number;
-  avg_metrics_score?: number;
-  avg_sleep_score!: number;
   avg_total_score?: number;
+  avg_sleep_score!: number;
   updated_at?: Date;
   created_at?: Date;
+  avg_activity_score?: number;
+  avg_metrics_score?: number;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof FitbitAverage {
     return FitbitAverage.init(
@@ -128,7 +128,7 @@ export class FitbitAverage
           allowNull: false,
         },
         period_type: {
-          type: DataTypes.ENUM('1D', '7D', '30D', '90D', '180D', '365D'),
+          type: DataTypes.ENUM('1D', '7D', '30D'),
           allowNull: false,
         },
         avg_steps: {
@@ -223,11 +223,31 @@ export class FitbitAverage
           type: DataTypes.FLOAT,
           allowNull: false,
         },
+        updated_at: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP'),
+        },
+        created_at: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP'),
+        },
+        avg_activity_score: {
+          type: DataTypes.FLOAT,
+          allowNull: true,
+          defaultValue: 0,
+        },
+        avg_metrics_score: {
+          type: DataTypes.FLOAT,
+          allowNull: true,
+          defaultValue: 0,
+        },
       },
       {
         sequelize,
         tableName: 'fitbit_average',
-        timestamps: true,
+        timestamps: false,
         indexes: [
           {
             name: 'PRIMARY',
@@ -249,42 +269,4 @@ export class FitbitAverage
       },
     );
   }
-
-  getAverageAttributes: () => Omit<
-    FitbitAverageAttributes,
-    | 'id'
-    | 'user_id'
-    | 'period_type'
-    | 'recorded_at'
-    | 'created_at'
-    | 'updated_at'
-  > = () => {
-    return {
-      avg_steps: this.avg_steps,
-      avg_calories_total: this.avg_calories_total,
-      avg_distance_km: this.avg_distance_km,
-      avg_heart_rate: this.avg_heart_rate,
-      avg_resting_heart_rate: this.avg_resting_heart_rate,
-      avg_activity_duration: this.avg_activity_duration,
-      avg_sedentary_minutes: this.avg_sedentary_minutes,
-      avg_lightly_active_minutes: this.avg_lightly_active_minutes,
-      avg_fairly_active_minutes: this.avg_fairly_active_minutes,
-      avg_very_active_minutes: this.avg_very_active_minutes,
-      avg_total_sleep_hours: this.avg_total_sleep_hours,
-      avg_deep_sleep_hours: this.avg_deep_sleep_hours,
-      avg_light_sleep_hours: this.avg_light_sleep_hours,
-      avg_rem_sleep_hours: this.avg_rem_sleep_hours,
-      avg_awake_hours: this.avg_awake_hours,
-      avg_sleep_heart_rate: this.avg_sleep_heart_rate,
-      avg_hrv: this.avg_hrv,
-      avg_rhr: this.avg_rhr,
-      avg_respiratory_rate: this.avg_respiratory_rate,
-      avg_skin_temperature: this.avg_skin_temperature,
-      avg_stress_score: this.avg_stress_score,
-      avg_total_score: this.avg_total_score,
-      avg_sleep_score: this.avg_sleep_score,
-      avg_activity_score: this.avg_activity_score,
-      avg_metrics_score: this.avg_metrics_score,
-    };
-  };
 }

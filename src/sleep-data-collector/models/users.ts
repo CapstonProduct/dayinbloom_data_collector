@@ -32,46 +32,14 @@ export interface UsersAttributes {
   created_at?: Date;
   updated_at?: Date;
   access_token_expires?: Date;
-  refresh_token_expires?: Date;
 }
 
-export type UsersPk = 'id';
+export type UsersPk = "id";
 export type UsersId = Users[UsersPk];
-export type UsersOptionalAttributes =
-  | 'id'
-  | 'address'
-  | 'phone_number'
-  | 'height'
-  | 'weight'
-  | 'BMI'
-  | 'profile_image_url'
-  | 'profile_image_key'
-  | 'encodedId'
-  | 'breakfast_time'
-  | 'lunch_time'
-  | 'dinner_time'
-  | 'kakao_user_id'
-  | 'is_profile_complete'
-  | 'last_login'
-  | 'refresh_token'
-  | 'access_token'
-  | 'guardian_code'
-  | 'doctor_code'
-  | 'status'
-  | 'deleted_at'
-  | 'created_at'
-  | 'updated_at'
-  | 'access_token_expires'
-  | 'refresh_token_expires';
-export type UsersCreationAttributes = Optional<
-  UsersAttributes,
-  UsersOptionalAttributes
->;
+export type UsersOptionalAttributes = "id" | "address" | "phone_number" | "height" | "weight" | "BMI" | "profile_image_url" | "profile_image_key" | "encodedId" | "breakfast_time" | "lunch_time" | "dinner_time" | "kakao_user_id" | "is_profile_complete" | "last_login" | "refresh_token" | "access_token" | "guardian_code" | "doctor_code" | "status" | "deleted_at" | "created_at" | "updated_at" | "access_token_expires";
+export type UsersCreationAttributes = Optional<UsersAttributes, UsersOptionalAttributes>;
 
-export class Users
-  extends Model<UsersAttributes, UsersCreationAttributes>
-  implements UsersAttributes
-{
+export class Users extends Model<UsersAttributes, UsersCreationAttributes> implements UsersAttributes {
   id!: number;
   username!: string;
   birth_date!: string;
@@ -101,186 +69,176 @@ export class Users
   created_at?: Date;
   updated_at?: Date;
   access_token_expires?: Date;
-  refresh_token_expires?: Date;
 
   // Users hasMany FitbitSleepData via user_id
   fitbit_sleep_data!: FitbitSleepData[];
   getFitbit_sleep_data!: Sequelize.HasManyGetAssociationsMixin<FitbitSleepData>;
-  setFitbit_sleep_data!: Sequelize.HasManySetAssociationsMixin<
-    FitbitSleepData,
-    FitbitSleepDataId
-  >;
-  addFitbit_sleep_datum!: Sequelize.HasManyAddAssociationMixin<
-    FitbitSleepData,
-    FitbitSleepDataId
-  >;
-  addFitbit_sleep_data!: Sequelize.HasManyAddAssociationsMixin<
-    FitbitSleepData,
-    FitbitSleepDataId
-  >;
+  setFitbit_sleep_data!: Sequelize.HasManySetAssociationsMixin<FitbitSleepData, FitbitSleepDataId>;
+  addFitbit_sleep_datum!: Sequelize.HasManyAddAssociationMixin<FitbitSleepData, FitbitSleepDataId>;
+  addFitbit_sleep_data!: Sequelize.HasManyAddAssociationsMixin<FitbitSleepData, FitbitSleepDataId>;
   createFitbit_sleep_datum!: Sequelize.HasManyCreateAssociationMixin<FitbitSleepData>;
-  removeFitbit_sleep_datum!: Sequelize.HasManyRemoveAssociationMixin<
-    FitbitSleepData,
-    FitbitSleepDataId
-  >;
-  removeFitbit_sleep_data!: Sequelize.HasManyRemoveAssociationsMixin<
-    FitbitSleepData,
-    FitbitSleepDataId
-  >;
-  hasFitbit_sleep_datum!: Sequelize.HasManyHasAssociationMixin<
-    FitbitSleepData,
-    FitbitSleepDataId
-  >;
-  hasFitbit_sleep_data!: Sequelize.HasManyHasAssociationsMixin<
-    FitbitSleepData,
-    FitbitSleepDataId
-  >;
+  removeFitbit_sleep_datum!: Sequelize.HasManyRemoveAssociationMixin<FitbitSleepData, FitbitSleepDataId>;
+  removeFitbit_sleep_data!: Sequelize.HasManyRemoveAssociationsMixin<FitbitSleepData, FitbitSleepDataId>;
+  hasFitbit_sleep_datum!: Sequelize.HasManyHasAssociationMixin<FitbitSleepData, FitbitSleepDataId>;
+  hasFitbit_sleep_data!: Sequelize.HasManyHasAssociationsMixin<FitbitSleepData, FitbitSleepDataId>;
   countFitbit_sleep_data!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Users {
-    return Users.init(
+    return Users.init({
+    id: {
+      autoIncrement: true,
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      primaryKey: true
+    },
+    username: {
+      type: DataTypes.STRING(10),
+      allowNull: false
+    },
+    birth_date: {
+      type: DataTypes.DATEONLY,
+      allowNull: false
+    },
+    gender: {
+      type: DataTypes.ENUM('남성','여성'),
+      allowNull: false
+    },
+    address: {
+      type: DataTypes.STRING(127),
+      allowNull: true
+    },
+    phone_number: {
+      type: DataTypes.STRING(15),
+      allowNull: true
+    },
+    height: {
+      type: DataTypes.FLOAT,
+      allowNull: true
+    },
+    weight: {
+      type: DataTypes.FLOAT,
+      allowNull: true
+    },
+    BMI: {
+      type: DataTypes.FLOAT,
+      allowNull: true
+    },
+    profile_image_url: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    profile_image_key: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    encodedId: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    breakfast_time: {
+      type: DataTypes.TIME,
+      allowNull: true
+    },
+    lunch_time: {
+      type: DataTypes.TIME,
+      allowNull: true
+    },
+    dinner_time: {
+      type: DataTypes.TIME,
+      allowNull: true
+    },
+    kakao_user_id: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    role: {
+      type: DataTypes.ENUM('senior','guardian','doctor'),
+      allowNull: false
+    },
+    login_provider: {
+      type: DataTypes.ENUM('fitbit','kakao'),
+      allowNull: false
+    },
+    is_profile_complete: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: 0
+    },
+    last_login: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    refresh_token: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    access_token: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    guardian_code: {
+      type: DataTypes.STRING(18),
+      allowNull: true,
+      unique: "guardian_code"
+    },
+    doctor_code: {
+      type: DataTypes.STRING(18),
+      allowNull: true,
+      unique: "doctor_code"
+    },
+    status: {
+      type: DataTypes.ENUM('active','deleted','inactive'),
+      allowNull: true,
+      defaultValue: "active"
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    access_token_expires: {
+      type: DataTypes.DATE,
+      allowNull: true
+    }
+  }, {
+    sequelize,
+    tableName: 'users',
+    timestamps: false,
+    indexes: [
       {
-        id: {
-          autoIncrement: true,
-          type: DataTypes.BIGINT,
-          allowNull: false,
-          primaryKey: true,
-        },
-        username: {
-          type: DataTypes.STRING(10),
-          allowNull: false,
-        },
-        birth_date: {
-          type: DataTypes.DATEONLY,
-          allowNull: false,
-        },
-        gender: {
-          type: DataTypes.ENUM('남성', '여성'),
-          allowNull: false,
-        },
-        address: {
-          type: DataTypes.STRING(127),
-          allowNull: true,
-        },
-        phone_number: {
-          type: DataTypes.STRING(15),
-          allowNull: true,
-        },
-        height: {
-          type: DataTypes.FLOAT,
-          allowNull: true,
-        },
-        weight: {
-          type: DataTypes.FLOAT,
-          allowNull: true,
-        },
-        BMI: {
-          type: DataTypes.FLOAT,
-          allowNull: true,
-        },
-        profile_image_url: {
-          type: DataTypes.STRING(255),
-          allowNull: true,
-        },
-        profile_image_key: {
-          type: DataTypes.STRING(255),
-          allowNull: true,
-        },
-        encodedId: {
-          type: DataTypes.STRING(20),
-          allowNull: true,
-        },
-        breakfast_time: {
-          type: DataTypes.TIME,
-          allowNull: true,
-        },
-        lunch_time: {
-          type: DataTypes.TIME,
-          allowNull: true,
-        },
-        dinner_time: {
-          type: DataTypes.TIME,
-          allowNull: true,
-        },
-        kakao_user_id: {
-          type: DataTypes.STRING(50),
-          allowNull: true,
-        },
-        role: {
-          type: DataTypes.ENUM('senior', 'guardian', 'doctor'),
-          allowNull: false,
-        },
-        login_provider: {
-          type: DataTypes.ENUM('fitbit', 'kakao'),
-          allowNull: false,
-        },
-        is_profile_complete: {
-          type: DataTypes.BOOLEAN,
-          allowNull: true,
-          defaultValue: 0,
-        },
-        last_login: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
-        refresh_token: {
-          type: DataTypes.TEXT,
-          allowNull: true,
-        },
-        access_token: {
-          type: DataTypes.TEXT,
-          allowNull: true,
-        },
-        guardian_code: {
-          type: DataTypes.STRING(18),
-          allowNull: true,
-          unique: 'guardian_code',
-        },
-        doctor_code: {
-          type: DataTypes.STRING(18),
-          allowNull: true,
-          unique: 'doctor_code',
-        },
-        status: {
-          type: DataTypes.ENUM('active', 'deleted', 'inactive'),
-          allowNull: true,
-          defaultValue: 'active',
-        },
-        access_token_expires: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
-        refresh_token_expires: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "id" },
+        ]
       },
       {
-        sequelize,
-        tableName: 'users',
-        timestamps: true,
-        paranoid: true,
-        indexes: [
-          {
-            name: 'PRIMARY',
-            unique: true,
-            using: 'BTREE',
-            fields: [{ name: 'id' }],
-          },
-          {
-            name: 'guardian_code',
-            unique: true,
-            using: 'BTREE',
-            fields: [{ name: 'guardian_code' }],
-          },
-          {
-            name: 'doctor_code',
-            unique: true,
-            using: 'BTREE',
-            fields: [{ name: 'doctor_code' }],
-          },
-        ],
+        name: "guardian_code",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "guardian_code" },
+        ]
       },
-    );
+      {
+        name: "doctor_code",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "doctor_code" },
+        ]
+      },
+    ]
+  });
   }
 }

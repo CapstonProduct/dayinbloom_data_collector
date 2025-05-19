@@ -196,6 +196,16 @@ export class FitbitAverageHistory extends Model<FitbitAverageHistoryAttributes, 
       type: DataTypes.FLOAT,
       allowNull: false
     },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
+    },
     avg_activity_score: {
       type: DataTypes.FLOAT,
       allowNull: true,
@@ -209,7 +219,7 @@ export class FitbitAverageHistory extends Model<FitbitAverageHistoryAttributes, 
   }, {
     sequelize,
     tableName: 'fitbit_average_history',
-    timestamps: true,
+    timestamps: false,
     indexes: [
       {
         name: "PRIMARY",

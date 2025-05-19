@@ -76,11 +76,16 @@ export class FitbitActivityData
           type: DataTypes.FLOAT,
           allowNull: false,
         },
+        created_at: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP'),
+        },
       },
       {
         sequelize,
         tableName: 'fitbit_activity_data',
-        timestamps: true,
+        timestamps: false,
         indexes: [
           {
             name: 'PRIMARY',

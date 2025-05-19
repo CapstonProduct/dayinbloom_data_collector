@@ -162,11 +162,16 @@ export class FitbitSleepData extends Model<FitbitSleepDataAttributes, FitbitSlee
     isMainSleep: {
       type: DataTypes.BOOLEAN,
       allowNull: false
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
     sequelize,
     tableName: 'fitbit_sleep_data',
-    timestamps: true,
+    timestamps: false,
     indexes: [
       {
         name: "PRIMARY",

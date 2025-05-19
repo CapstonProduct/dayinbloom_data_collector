@@ -194,11 +194,16 @@ export class FitbitActivitySummary
           type: DataTypes.INTEGER,
           allowNull: true,
         },
+        created_at: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP'),
+        },
       },
       {
         sequelize,
         tableName: 'fitbit_activity_summary',
-        timestamps: true,
+        timestamps: false,
         indexes: [
           {
             name: 'PRIMARY',

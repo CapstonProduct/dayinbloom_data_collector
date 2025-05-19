@@ -1,0 +1,9 @@
+{
+  "id": "collect-sleep-data-sample",
+  "detail-type": "Collect Sleep Data",
+  "time": "2025-05-18T13:00:00+09:00",
+  "region": "ap-northeast-2",
+  "detail": {
+    "fitbit_user_id": "CGVG2S"
+  }
+}

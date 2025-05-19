@@ -35,7 +35,6 @@ export interface UsersAttributes {
   created_at?: Date;
   updated_at?: Date;
   access_token_expires?: Date;
-  refresh_token_expires?: Date;
 }
 
 export type UsersPk = 'id';
@@ -64,8 +63,7 @@ export type UsersOptionalAttributes =
   | 'deleted_at'
   | 'created_at'
   | 'updated_at'
-  | 'access_token_expires'
-  | 'refresh_token_expires';
+  | 'access_token_expires';
 export type UsersCreationAttributes = Optional<
   UsersAttributes,
   UsersOptionalAttributes
@@ -104,7 +102,6 @@ export class Users
   created_at?: Date;
   updated_at?: Date;
   access_token_expires?: Date;
-  refresh_token_expires?: Date;
 
   // Users hasMany FitbitActivitySummary via user_id
   fitbit_activity_summaries!: FitbitActivitySummary[];
@@ -139,7 +136,6 @@ export class Users
     FitbitActivitySummaryId
   >;
   countFitbit_activity_summaries!: Sequelize.HasManyCountAssociationsMixin;
-  // Users hasMany FitbitAverage via user_id
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Users {
     return Users.init(
@@ -250,11 +246,21 @@ export class Users
           allowNull: true,
           defaultValue: 'active',
         },
-        access_token_expires: {
+        deleted_at: {
           type: DataTypes.DATE,
           allowNull: true,
         },
-        refresh_token_expires: {
+        created_at: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP'),
+        },
+        updated_at: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP'),
+        },
+        access_token_expires: {
           type: DataTypes.DATE,
           allowNull: true,
         },
@@ -262,8 +268,7 @@ export class Users
       {
         sequelize,
         tableName: 'users',
-        timestamps: true,
-        paranoid: true,
+        timestamps: false,
         indexes: [
           {
             name: 'PRIMARY',

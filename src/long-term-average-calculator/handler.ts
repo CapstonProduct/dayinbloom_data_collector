@@ -14,10 +14,13 @@ interface CalculateLongTermAverageDetail {
 }
 
 export const handler: EventBridgeHandler<
-  "Calculate Long Term Average of User's Activity Data",
+  'Calculate Long Term Average',
   CalculateLongTermAverageDetail,
   any
 > = async event => {
+  console.log(`이벤트를 전송받았습니다: `);
+  console.log(event);
+
   // JSON 파싱하여 필요한 정보 추출
   // EventBridge 이벤트에는 body 가 없는 대신 detail 이라는 요소가 있읍니다.
   const { fitbit_user_id, monthStartDate } = event.detail;
@@ -28,16 +31,17 @@ export const handler: EventBridgeHandler<
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    logging: false,
   });
   const User = _Users.initModel(sequelize);
   const FitbitAverage = _FitbitAverage.initModel(sequelize);
   const FitbitAverageHistory = _FitbitAverageHistory.initModel(sequelize);
 
   try {
-    // 유저 정보 조회
+    console.log(`유저 정보를 조회합니다: `);
     const user = await User.findOne({
       where: { encodedId: fitbit_user_id },
-      attributes: ['id', 'encodedId', 'access_token', 'access_token_expires'],
+      attributes: ['id'],
     });
     if (!user) {
       await sequelize.close();
@@ -49,7 +53,10 @@ export const handler: EventBridgeHandler<
         }),
       };
     }
-    const userId = user.id;
+    console.log(
+      `유저 ${fitbit_user_id} 의 정보를 찾았습니다: ${JSON.stringify(user.toJSON())}`,
+    );
+    const { id: userId } = user.toJSON();
 
     const today = DateTime.now().setZone('UTC+9').startOf('day');
     const thisMonth = today.startOf('month');
@@ -69,6 +76,7 @@ export const handler: EventBridgeHandler<
      */
 
     // 이번달의 30D 평균을 단기 평균 테이블에서 가져옴
+    console.log(`이번 달: ${thisMonthStr} 의 30일 평균을 조회합니다`);
     const thisMonthMonthlyAverage = await FitbitAverage.findOne({
       where: {
         user_id: userId,
@@ -79,6 +87,7 @@ export const handler: EventBridgeHandler<
     if (!thisMonthMonthlyAverage) {
       throw new Error('이번달의 30D 평균을 찾을 수 없습니다.');
     }
+    console.log(`이번 달: ${thisMonthStr} 의 30일 평균을 조회했습니다.`);
 
     // 열두달치 장기 평균 가져오기
     const twelveMonthsAveragesQueryResult = await FitbitAverageHistory.findAll({
@@ -93,6 +102,10 @@ export const handler: EventBridgeHandler<
       order: [['recorded_at', 'DESC']],
       limit: 12,
     });
+    console.log(
+      `12 개월치 평균 데이터를 조회했습니다. 데이터 총 ${twelveMonthsAveragesQueryResult.length} 개`,
+    );
+
     // 세달치 평균
     const threeMonthsAveragesQueryResult =
       twelveMonthsAveragesQueryResult.filter(
@@ -100,33 +113,43 @@ export const handler: EventBridgeHandler<
           new Date(recorded_at) >=
           new Date(thisMonth.minus({ months: 3 }).valueOf()),
       );
+    console.log(
+      `3 개월치 평균 데이터를 조회했습니다. 데이터 총 ${threeMonthsAveragesQueryResult.length} 개`,
+    );
+
     // 여섯달치 평균
     const sixMonthsAveragesQueryResult = twelveMonthsAveragesQueryResult.filter(
       ({ recorded_at }) =>
         new Date(recorded_at) >=
         new Date(thisMonth.minus({ months: 6 }).valueOf()),
     );
+    console.log(
+      `6 개월치 평균 데이터를 조회했습니다. 데이터 총 ${sixMonthsAveragesQueryResult.length} 개`,
+    );
 
     // 장기 평균 계산
+    console.log(`장기 평균을 계산합니다.`);
+    const { id, ...thisMonthMonthlyAverageAttributes } =
+      thisMonthMonthlyAverage.toJSON();
     const threeMonthsAverage = calculateRangedAverage(
       threeMonthsAveragesQueryResult,
-      thisMonthMonthlyAverage,
+      thisMonthMonthlyAverageAttributes,
     );
     const sixMonthsAverage = calculateRangedAverage(
       sixMonthsAveragesQueryResult,
-      thisMonthMonthlyAverage,
+      thisMonthMonthlyAverageAttributes,
     );
     const twelveMonthsAverage = calculateRangedAverage(
       twelveMonthsAveragesQueryResult,
-      thisMonthMonthlyAverage,
+      thisMonthMonthlyAverageAttributes,
     );
+    console.log(`장기 평균을 계산했습니다.`);
 
     // 데이터 반영
     const transaction = await sequelize.transaction();
     try {
-      await transaction.commit();
       await FitbitAverageHistory.create({
-        ...thisMonthMonthlyAverage.getAverageAttributes(),
+        ...thisMonthMonthlyAverageAttributes,
         user_id: userId,
         recorded_at: thisMonthStr,
         period_type: '30D',
@@ -157,30 +180,26 @@ export const handler: EventBridgeHandler<
         created_at: new Date(),
         updated_at: new Date(),
       });
+      await transaction.commit();
     } catch (error) {
       await transaction.rollback();
+      console.error(error);
       throw new Error('장기 평균 데이터 반영 중 오류가 발생했습니다.');
     }
 
+    await sequelize.close();
     return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: '장기평균 계산이 성공적으로 완료되었습니다.',
-        fitbit_user_id,
-        date: todayStr,
-        period_types: '30D, 90D, 180D, 360D',
-      }),
+      message: '장기평균 계산이 성공적으로 완료되었습니다.',
+      fitbit_user_id,
+      date: todayStr,
+      period_types: '30D, 90D, 180D, 360D',
     };
   } catch (error) {
+    await sequelize.close();
     console.error('Error:', error);
     return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: '장기평균 계산 중 오류가 발생했습니다.',
-        error: error instanceof Error ? error.message : String(error),
-      }),
+      message: '장기평균 계산 중 오류가 발생했습니다.',
+      error: error instanceof Error ? error.message : String(error),
     };
-  } finally {
-    await sequelize.close();
   }
 };

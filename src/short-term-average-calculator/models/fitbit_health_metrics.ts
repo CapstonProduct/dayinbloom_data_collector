@@ -93,11 +93,16 @@ export class FitbitHealthMetrics extends Model<FitbitHealthMetricsAttributes, Fi
     sleep_contribution: {
       type: DataTypes.FLOAT,
       allowNull: true
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
     sequelize,
     tableName: 'fitbit_health_metrics',
-    timestamps: true,
+    timestamps: false,
     indexes: [
       {
         name: "PRIMARY",

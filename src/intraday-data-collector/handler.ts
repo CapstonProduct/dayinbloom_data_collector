@@ -3,7 +3,7 @@ import { Sequelize } from 'sequelize';
 // import { DeviceData, IntradayData, FitbitToken } from './db/models';
 import { EventBridgeHandler } from 'aws-lambda';
 import { Users, FitbitDevice, FitbitActivityData } from './models';
-import { isTokenExpired } from './utils/authentication';
+import getAccessToken from './utils/authentication';
 
 interface CollectIntradayDataDetail {
   fitbit_user_id: string;
@@ -31,10 +31,13 @@ interface IntradayData {
 }
 
 export const handler: EventBridgeHandler<
-  "Collect last 15 minutes of User's data",
+  'Collect Intraday Data',
   CollectIntradayDataDetail,
   any
 > = async event => {
+  console.log(`이벤트를 전송받았습니다: `);
+  console.log(event);
+
   const { fitbit_user_id } = event.detail;
 
   const sequelize = new Sequelize({
@@ -43,6 +46,7 @@ export const handler: EventBridgeHandler<
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    logging: false,
   });
 
   const UserModel = Users.initModel(sequelize);
@@ -50,42 +54,37 @@ export const handler: EventBridgeHandler<
   const FitbitActivityDataModel = FitbitActivityData.initModel(sequelize);
 
   try {
-    // DB에서 토큰 정보 조회
+    console.log(`유저 정보를 조회합니다: `);
     const user = await UserModel.findOne({
       where: { encodedId: fitbit_user_id },
-      attributes: ['id', 'encodedId', 'access_token', 'access_token_expires'],
+      attributes: [
+        'id',
+        'encodedId',
+        'access_token',
+        'access_token_expires',
+        'refresh_token',
+      ],
     });
-
     if (!user) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({
-          message: '사용자 정보를 찾을 수 없습니다.',
-          fitbit_user_id,
-        }),
-      };
-    }
-
-    let accessToken: string;
-    const { access_token, access_token_expires } = user;
-    if (!access_token || isTokenExpired(access_token_expires)) {
-      try {
-        const { data } = await axios.post(
-          'https://dayinbloom.shop/auth/oauth/token',
-          {
-            userId: fitbit_user_id,
-          },
-        );
-        accessToken = data.accessToken;
-      } catch (error) {
-        console.error(error);
-        return;
-      }
+      console.error('사용자 정보를 찾을 수 없습니다.');
+      await sequelize.close();
+      return;
     } else {
-      accessToken = access_token;
+      console.log(
+        `유저 ${fitbit_user_id} 의 정보를 찾았습니다: ${JSON.stringify(user.toJSON())}`,
+      );
     }
 
-    // 기기 데이터 수집
+    const { userId, accessToken } = await getAccessToken(user.toJSON());
+    if (!accessToken) {
+      console.error(
+        `유저 ${fitbit_user_id} 의 액세스 토큰을 찾을 수 없어서 데이터를 불러오지 못합니다.`,
+      );
+      await sequelize.close();
+      return;
+    }
+
+    console.log('기기 데이터 수집');
     const deviceResponse = await axios.get(
       'https://api.fitbit.com/1/user/-/devices.json',
       {
@@ -95,7 +94,7 @@ export const handler: EventBridgeHandler<
       },
     );
 
-    // 마지막 동기화 시간 찾기
+    console.log('마지막 동기화 시간 찾기');
     let lastSyncTimeDevice = new Date(0);
     for (const device of deviceResponse.data) {
       const deviceSyncTime = new Date(device.lastSyncTime);
@@ -112,7 +111,7 @@ export const handler: EventBridgeHandler<
     // 기기 데이터 저장
     for (const device of deviceResponse.data) {
       await DeviceModel.create({
-        user_id: user.id,
+        user_id: userId,
         device_id: device.id,
         device_version: device.deviceVersion,
         // battery: device.battery,
@@ -270,7 +269,7 @@ export const handler: EventBridgeHandler<
 
     // RDS에 저장
     const newActivityData = await FitbitActivityDataModel.create({
-      user_id: user.id,
+      user_id: userId,
       date: new Date(date),
       steps: summary.steps_sum,
       distance_km: summary.distance_sum,
@@ -281,24 +280,18 @@ export const handler: EventBridgeHandler<
     await sequelize.close();
 
     return {
-      statusCode: 201,
-      body: JSON.stringify({
-        message: '15분 단위 데이터가 성공적으로 수집되었습니다.',
-        fitbit_user_id,
-        time_range: result.time_range,
-        raw_data: newActivityData,
-      }),
+      message: '15분 단위 데이터가 성공적으로 수집되었습니다.',
+      fitbit_user_id,
+      time_range: result.time_range,
+      raw_data: newActivityData,
     };
   } catch (error) {
     await sequelize.close();
     console.error('Error:', error);
 
     return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: '데이터 수집 중 오류가 발생했습니다.',
-        error: error instanceof Error ? error.message : String(error),
-      }),
+      message: '데이터 수집 중 오류가 발생했습니다.',
+      error: error instanceof Error ? error.message : String(error),
     };
   }
 };

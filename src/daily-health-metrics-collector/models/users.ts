@@ -1,9 +1,5 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
-import {
-  FitbitHealthMetrics,
-  FitbitHealthMetricsId,
-} from './fitbit_health_metrics';
 
 export interface UsersAttributes {
   id: number;
@@ -35,7 +31,6 @@ export interface UsersAttributes {
   created_at?: Date;
   updated_at?: Date;
   access_token_expires?: Date;
-  refresh_token_expires?: Date;
 }
 
 export type UsersPk = 'id';
@@ -64,8 +59,7 @@ export type UsersOptionalAttributes =
   | 'deleted_at'
   | 'created_at'
   | 'updated_at'
-  | 'access_token_expires'
-  | 'refresh_token_expires';
+  | 'access_token_expires';
 export type UsersCreationAttributes = Optional<
   UsersAttributes,
   UsersOptionalAttributes
@@ -104,41 +98,6 @@ export class Users
   created_at?: Date;
   updated_at?: Date;
   access_token_expires?: Date;
-  refresh_token_expires?: Date;
-
-  // Users hasMany FitbitHealthMetrics via user_id
-  fitbit_health_metrics!: FitbitHealthMetrics[];
-  getFitbit_health_metrics!: Sequelize.HasManyGetAssociationsMixin<FitbitHealthMetrics>;
-  setFitbit_health_metrics!: Sequelize.HasManySetAssociationsMixin<
-    FitbitHealthMetrics,
-    FitbitHealthMetricsId
-  >;
-  addFitbit_health_metric!: Sequelize.HasManyAddAssociationMixin<
-    FitbitHealthMetrics,
-    FitbitHealthMetricsId
-  >;
-  addFitbit_health_metrics!: Sequelize.HasManyAddAssociationsMixin<
-    FitbitHealthMetrics,
-    FitbitHealthMetricsId
-  >;
-  createFitbit_health_metric!: Sequelize.HasManyCreateAssociationMixin<FitbitHealthMetrics>;
-  removeFitbit_health_metric!: Sequelize.HasManyRemoveAssociationMixin<
-    FitbitHealthMetrics,
-    FitbitHealthMetricsId
-  >;
-  removeFitbit_health_metrics!: Sequelize.HasManyRemoveAssociationsMixin<
-    FitbitHealthMetrics,
-    FitbitHealthMetricsId
-  >;
-  hasFitbit_health_metric!: Sequelize.HasManyHasAssociationMixin<
-    FitbitHealthMetrics,
-    FitbitHealthMetricsId
-  >;
-  hasFitbit_health_metrics!: Sequelize.HasManyHasAssociationsMixin<
-    FitbitHealthMetrics,
-    FitbitHealthMetricsId
-  >;
-  countFitbit_health_metrics!: Sequelize.HasManyCountAssociationsMixin;
 
   static initModel(sequelize: Sequelize.Sequelize): typeof Users {
     return Users.init(
@@ -249,11 +208,21 @@ export class Users
           allowNull: true,
           defaultValue: 'active',
         },
-        access_token_expires: {
+        deleted_at: {
           type: DataTypes.DATE,
           allowNull: true,
         },
-        refresh_token_expires: {
+        created_at: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP'),
+        },
+        updated_at: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP'),
+        },
+        access_token_expires: {
           type: DataTypes.DATE,
           allowNull: true,
         },
@@ -261,8 +230,7 @@ export class Users
       {
         sequelize,
         tableName: 'users',
-        timestamps: true,
-        paranoid: true,
+        timestamps: false,
         indexes: [
           {
             name: 'PRIMARY',

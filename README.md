@@ -69,3 +69,17 @@ git clone https://github.com/CapstonProduct/dayinbloom-data-collector
 cd dayinbloom-data-collector
 npm install
 ```
+
+### 함수 로컬 테스트
+
+`env/locals.json` 은 `.env` 파일의 key/value 를 JSON 형식으로 변환하여 사용하세요
+
+```bash
+sam local invoke DailyHealthMetricsCollector --event events/collect-daily-health-metrics.json --env-vars env/locals.json --profile dayinbloom --no-memory-limit
+sam local invoke DailySummaryCollector --event events/collect-daily-summary.json --env-vars env/locals.json --profile dayinbloom --no-memory-limit
+sam local invoke IntradayDataCollector --event events/collect-intraday-data.json --env-vars env/locals.json --profile dayinbloom --no-memory-limit
+sam local invoke SleepDataCollector --event events/collect-sleep-data.json --env-vars env/locals.json --profile dayinbloom --no-memory-limit
+
+sam local invoke ShortTermAverageCalculator --event events/calculate-short-term-average.json --env-vars env/locals.json --profile dayinbloom --no-memory-limit
+sam local invoke LongTermAverageCalculator --event events/calculate-long-term-average.json --env-vars env/locals.json --profile dayinbloom --no-memory-limit
+```

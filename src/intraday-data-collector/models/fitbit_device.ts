@@ -65,11 +65,21 @@ export class FitbitDevice extends Model<FitbitDeviceAttributes, FitbitDeviceCrea
     last_sync_time: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
     sequelize,
     tableName: 'fitbit_device',
-    timestamps: true,
+    timestamps: false,
     indexes: [
       {
         name: "PRIMARY",

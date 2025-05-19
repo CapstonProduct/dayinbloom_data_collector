@@ -7,6 +7,12 @@ Transform:
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
+  # Event Bus
+  # DayinbloomEventBus:
+  #   Type: AWS::Events::EventBus
+  #   Properties:
+  #     Name: dayinbloom-event-bus
+  
   # Lambda Functions
   IntradayDataCollector:
     Type: AWS::Serverless::Function
@@ -19,6 +25,13 @@ Resources:
       Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
       CodeUri: dist/intraday-data-collector
       Handler: handler.handler
+      Environment:
+        Variables:
+          DB_HOST: ""
+          DB_USER: ""
+          DB_PASSWORD: ""
+          DB_NAME: ""
+      Timeout: 30
       Layers:
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:axios:8
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
@@ -33,6 +46,13 @@ Resources:
       Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
       CodeUri: dist/short-term-average-calculator
       Handler: handler.handler
+      Environment:
+        Variables:
+          DB_HOST: ""
+          DB_USER: ""
+          DB_PASSWORD: ""
+          DB_NAME: ""
+      Timeout: 30
       Layers:
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
   DailySummaryCollector:
@@ -46,6 +66,13 @@ Resources:
       Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
       CodeUri: dist/daily-summary-collector
       Handler: handler.handler
+      Environment:
+        Variables:
+          DB_HOST: ""
+          DB_USER: ""
+          DB_PASSWORD: ""
+          DB_NAME: ""
+      Timeout: 30
       Layers:
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:axios:8
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
@@ -60,6 +87,13 @@ Resources:
       Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
       CodeUri: dist/daily-health-metrics-collector
       Handler: handler.handler
+      Environment:
+        Variables:
+          DB_HOST: ""
+          DB_USER: ""
+          DB_PASSWORD: ""
+          DB_NAME: ""
+      Timeout: 30
       Layers:
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:axios:8
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
@@ -74,6 +108,13 @@ Resources:
       Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
       CodeUri: dist/long-term-average-calculator
       Handler: handler.handler
+      Environment:
+        Variables:
+          DB_HOST: ""
+          DB_USER: ""
+          DB_PASSWORD: ""
+          DB_NAME: ""
+      Timeout: 30
       Layers:
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
   OldAverageDataRemover:
@@ -87,6 +128,13 @@ Resources:
       Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
       CodeUri: dist/old-average-data-remover
       Handler: handler.handler
+      Environment:
+        Variables:
+          DB_HOST: ""
+          DB_USER: ""
+          DB_PASSWORD: ""
+          DB_NAME: ""
+      Timeout: 30
       Layers:
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
   OldRawDataRemover:
@@ -100,6 +148,13 @@ Resources:
       Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
       CodeUri: dist/old-raw-data-remover
       Handler: handler.handler
+      Environment:
+        Variables:
+          DB_HOST: ""
+          DB_USER: ""
+          DB_PASSWORD: ""
+          DB_NAME: ""
+      Timeout: 30
       Layers:
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
   SleepDataCollector:
@@ -113,6 +168,13 @@ Resources:
       Role: arn:aws:iam::767397900488:role/dayinbloom-api-AttachLogsToLambdaRole-7idUE94wWsAH
       CodeUri: dist/sleep-data-collector
       Handler: handler.handler
+      Environment:
+        Variables:
+          DB_HOST: ""
+          DB_USER: ""
+          DB_PASSWORD: ""
+          DB_NAME: ""
+      Timeout: 30
       Layers:
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:axios:8
         - arn:aws:lambda:ap-northeast-2:767397900488:layer:database-layer:1
