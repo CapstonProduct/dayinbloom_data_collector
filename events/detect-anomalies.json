@@ -1,0 +1,13 @@
+{
+  "version": "0",
+  "id": "ef04f3c6-17ed-1066-e3eb-f233a253717d",
+  "detail-type": "Detect Anomalies",
+  "source": "dayinbloom-intraday-data-collector",
+  "account": "767397900488",
+  "time": "2025-05-25T05:08:16Z",
+  "region": "ap-northeast-2",
+  "resources": [],
+  "detail": {
+    "fitbitUserId": "CGVG2S"
+  }
+}
